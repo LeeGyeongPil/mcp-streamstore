@@ -1,0 +1,5 @@
+{
+  "name": "mcp-streamstore-install-check",
+  "private": true,
+  "type": "module"
+}

@@ -1,0 +1,83 @@
+{
+  "name": "mcp-streamstore",
+  "version": "0.1.0",
+  "description": "Durable EventStore (SQLite, Redis) and session store for MCP SDK Streamable HTTP servers: Last-Event-ID resumption across restarts and instances, session scoping, stateful-session rehydration and a v2 Redis ServerEventBus.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "eventstore",
+    "event-store",
+    "resumability",
+    "streamable-http",
+    "redis",
+    "sqlite",
+    "session",
+    "horizontal-scaling"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeeGyeongPil/mcp-streamstore.git"
+  },
+  "homepage": "https://github.com/LeeGyeongPil/mcp-streamstore#readme",
+  "bugs": "https://github.com/LeeGyeongPil/mcp-streamstore/issues",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance/index.d.ts",
+      "default": "./dist/conformance/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/fake-redis.d.ts",
+      "default": "./dist/testing/fake-redis.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mcp-streamstore": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "examples",
+    "README.md",
+    "README.ko.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/clean.mjs dist && tsc -p tsconfig.json",
+    "build:test": "node scripts/clean.mjs build/test-out && tsc -p tsconfig.test.json",
+    "test": "npm run build && npm run build:test && node --test --test-reporter=tap \"build/test-out/test/*.test.js\"",
+    "test:redis": "npm run build && npm run build:test && node --test --test-reporter=tap build/test-out/test/redis.real.test.js",
+    "demo": "npm run build --silent && node dist/cli.js demo",
+    "check:pack": "npm run build && node scripts/check-pack.mjs",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@modelcontextprotocol/server": "^2.4.0"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/sdk": {
+      "optional": true
+    },
+    "@modelcontextprotocol/server": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "@modelcontextprotocol/server": "2.4.0",
+    "@types/node": "22.20.5",
+    "redis": "6.3.1",
+    "typescript": "5.9.3"
+  }
+}
