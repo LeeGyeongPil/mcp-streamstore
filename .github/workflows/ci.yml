@@ -1,0 +1,81 @@
+# Offline tests (memory, SQLite, practice fake Redis) on every supported Node, a real Redis 7 job,
+# an install check of the npm pack tarball, and an early-warning run against the newest SDK releases.
+name: ci
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"   # every Monday: catch breakage from new SDK / Node releases
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: npm test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "24", "26"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run demo -- --backend all --lang en
+
+  redis:
+    name: real Redis 7 (npm run test:redis)
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:redis
+      - run: npm run demo -- --backend redis --lang en
+
+  pack:
+    name: install check (npm run check:pack)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run check:pack
+
+  sdk-latest:
+    name: newest SDK releases (early warning)
+    runs-on: ubuntu-latest
+    continue-on-error: true   # rehydrate() relies on SDK internals; this job shows breakage before users hit it
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save @modelcontextprotocol/sdk@latest @modelcontextprotocol/server@latest
+      - run: npm test
