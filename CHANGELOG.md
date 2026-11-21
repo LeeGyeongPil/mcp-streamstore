@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- CI reduced to a single job (ubuntu-latest, Node 22, redis:7 service); the separate `sdk-latest.yml` workflow was removed.
+- README and CI comments updated to match. No library changes.
+
 ## 0.1.2
 
 - Redis connection errors now end with a period and show the underlying cause.

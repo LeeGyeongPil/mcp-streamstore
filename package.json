@@ -1,6 +1,6 @@
 {
   "name": "mcp-streamstore",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Durable EventStore (SQLite, Redis) and session store for MCP SDK Streamable HTTP servers: Last-Event-ID resumption across restarts and instances, session scoping, stateful-session rehydration and a v2 Redis ServerEventBus.",
   "license": "MIT",
   "type": "module",
