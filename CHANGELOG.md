@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.2
+
+- Redis connection errors now end with a period and show the underlying cause.
+- CI simplified; the latest-SDK check moved to a separate `sdk-latest.yml` workflow.
+- Test suite grows to 93 tests; README and screenshots refreshed.
+
 ## 0.1.1
 
 - CI workflow hardened so the test job is more robust on fresh runners. No library changes.
