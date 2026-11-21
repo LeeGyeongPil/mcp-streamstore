@@ -212,7 +212,7 @@ Checked 2026-11-20. This list names the options and links to them; read their pa
 | `RehydrateUnsupportedError` | SDK internals differ from the tested versions | Pin SDK to a tested version, or open an issue with the version in the message |
 | `ExperimentalWarning: SQLite` | Node 22/24 mark `node:sqlite` experimental | Harmless; Node 26 does not print it |
 | `npm run test:redis` says `skipped: REDIS_URL not set` | No real Redis | Set `REDIS_URL` (exit code is 0 either way) |
-| Demo prints `Could not connect to REDIS_URL: ...` and exits with code 2 | Redis is not running, or host, port or password is wrong | Check host, port and password, or unset `REDIS_URL` to use the practice fake (mock) Redis |
+| Demo prints `Could not connect to REDIS_URL: <cause>` (for example `connect ECONNREFUSED`) and exits with code 2 | Redis is not running, or host, port or password is wrong | Check host, port and password, or unset `REDIS_URL` to use the practice fake (mock) Redis |
 
 ## Versioning and compatibility
 
@@ -222,7 +222,7 @@ Checked 2026-11-20. This list names the options and links to them; read their pa
 
 ```bash
 npm install
-npm test                  # build + 92 tests (memory, SQLite, practice fake Redis; real-Redis suite skipped)
+npm test                  # build + 93 tests (memory, SQLite, practice fake Redis; real-Redis suite skipped)
 REDIS_URL=redis://localhost:6379 npm run test:redis   # real Redis suite
 npm run check:pack        # pack, install into a fresh project, run quickstart, type-check
 ```

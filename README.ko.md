@@ -212,7 +212,7 @@ runEventStoreConformance('my-store', ({ shared, retention }) => new MyStore({ ta
 | `RehydrateUnsupportedError` | SDK 내부가 시험한 버전과 다름 | 시험된 SDK 버전으로 고정하거나 메시지의 버전을 적어 이슈 등록 |
 | `ExperimentalWarning: SQLite` | Node 22·24 는 `node:sqlite` 를 실험 기능으로 표시 | 무해함, Node 26 은 내지 않음 |
 | `npm run test:redis` 가 `skipped: REDIS_URL not set` | 실제 Redis 없음 | `REDIS_URL` 지정(종료 코드는 어느 쪽이든 0) |
-| 데모가 `Could not connect to REDIS_URL: ...` 를 내고 종료 코드 2 로 끝남 | Redis 가 꺼져 있거나 호스트·포트·비밀번호가 틀림 | 호스트·포트·비밀번호를 확인하거나 `REDIS_URL` 을 지워 연습용 가짜(mock) Redis 사용 |
+| 데모가 `Could not connect to REDIS_URL: <원인>`(예: `connect ECONNREFUSED`) 을 내고 종료 코드 2 로 끝남 | Redis 가 꺼져 있거나 호스트·포트·비밀번호가 틀림 | 호스트·포트·비밀번호를 확인하거나 `REDIS_URL` 을 지워 연습용 가짜(mock) Redis 사용 |
 
 ## 버전·호환성
 
@@ -222,7 +222,7 @@ runEventStoreConformance('my-store', ({ shared, retention }) => new MyStore({ ta
 
 ```bash
 npm install
-npm test                  # 빌드 + 92개 시험(메모리, SQLite, 연습용 가짜 Redis, 실제 Redis 시험은 건너뜀)
+npm test                  # 빌드 + 93개 시험(메모리, SQLite, 연습용 가짜 Redis, 실제 Redis 시험은 건너뜀)
 REDIS_URL=redis://localhost:6379 npm run test:redis   # 실제 Redis 시험
 npm run check:pack        # pack, 새 프로젝트에 설치, quickstart 실행, 타입 검사
 ```
