@@ -216,7 +216,7 @@ Checked 2026-11-20. This list names the options and links to them; read their pa
 
 ## Versioning and compatibility
 
-[SemVer](https://semver.org). While 0.x, minor versions may change the API; changes are listed in [CHANGELOG.md](CHANGELOG.md). Tested on Node 22, 24 and 26 in CI, SDK `@modelcontextprotocol/sdk` 1.32.2 and `@modelcontextprotocol/server` 2.4.0, real Redis 7 in a CI job.
+[SemVer](https://semver.org). While 0.x, minor versions may change the API; changes are listed in [CHANGELOG.md](CHANGELOG.md). CI runs on Node 22 (ubuntu-latest), SDK `@modelcontextprotocol/sdk` 1.32.2 and `@modelcontextprotocol/server` 2.4.0, real Redis 7 in a CI job.
 
 ## Development and contributing
 

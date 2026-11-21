@@ -216,7 +216,7 @@ runEventStoreConformance('my-store', ({ shared, retention }) => new MyStore({ ta
 
 ## 버전·호환성
 
-[유의적 버전(SemVer)](https://semver.org/lang/ko/)을 따릅니다. 0.x 동안은 마이너 버전에서 API 가 바뀔 수 있고 [CHANGELOG.md](CHANGELOG.md)에 적습니다. CI 에서 Node 22·24·26, SDK `@modelcontextprotocol/sdk` 1.32.2 와 `@modelcontextprotocol/server` 2.4.0, 실제 Redis 7 작업으로 시험합니다.
+[유의적 버전(SemVer)](https://semver.org/lang/ko/)을 따릅니다. 0.x 동안은 마이너 버전에서 API 가 바뀔 수 있고 [CHANGELOG.md](CHANGELOG.md)에 적습니다. CI 는 Node 22(ubuntu-latest)에서 SDK `@modelcontextprotocol/sdk` 1.32.2 와 `@modelcontextprotocol/server` 2.4.0, 실제 Redis 7 작업으로 시험합니다.
 
 ## 개발·기여
 
