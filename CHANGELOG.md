@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- CI workflow hardened so the test job is more robust on fresh runners. No library changes.
+
 ## 0.1.0
 
 First release.
