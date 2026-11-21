@@ -5,7 +5,7 @@ import { execFile } from 'node:child_process';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
-import { runCli } from '../src/cli.js';
+import { connectFailureMessage, runCli } from '../src/cli.js';
 import { MESSAGES, normalize, resolveLang, translator } from '../src/i18n/index.js';
 
 const run = promisify(execFile);
@@ -132,6 +132,21 @@ describe('unreachable REDIS_URL', () => {
       assert.equal(r.code, 2);
       assert.ok(r.err.includes(needle), r.err);
       assert.ok(Date.now() - started < 15000, 'took too long');
+      // 원인은 재시도 포기 표시가 아니라 실제 소켓 오류여야 하고, 다음 문장 앞에 마침표가 있어야 한다
+      assert.doesNotMatch(r.err, /gave up reconnecting/);
+      assert.match(r.err, /ECONNREFUSED|connect|refused/i);
+      assert.match(r.err, lang === 'en' ? /\. Check / : /\. 서버가 /);
+      assert.ok(r.err.includes('REDIS_URL'), 'mentions unsetting REDIS_URL');
+      assert.ok(r.err.includes(lang === 'en' ? 'practice fake (mock) Redis' : '연습용 가짜(mock) Redis'), r.err);
     });
   }
+
+  it('connectFailureMessage prefers the real cause and trims the trailing period', () => {
+    const refused = Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:1'), { code: 'ECONNREFUSED' });
+    assert.equal(connectFailureMessage(refused, new Error('gave up reconnecting')), 'connect ECONNREFUSED 127.0.0.1:1');
+    assert.equal(connectFailureMessage(undefined, new Error('WRONGPASS invalid username-password pair.')), 'WRONGPASS invalid username-password pair');
+    const both = new AggregateError([new Error('connect ECONNREFUSED ::1:1'), new Error('connect ECONNREFUSED 127.0.0.1:1')], '');
+    assert.equal(connectFailureMessage(both, undefined), 'connect ECONNREFUSED ::1:1');
+    assert.equal(connectFailureMessage(undefined, undefined), 'unknown error');
+  });
 });

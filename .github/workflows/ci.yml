@@ -1,13 +1,12 @@
-# Offline tests (memory, SQLite, practice fake Redis) on every supported Node, a real Redis 7 job,
-# an install check of the npm pack tarball, and an early-warning run against the newest SDK releases.
-# Only official actions/* are used. Every job has a time limit so a stuck test cannot hold a runner
-# for hours, and a failed job prints the tool versions and installed packages to make the log useful.
+# Offline tests (memory, SQLite, practice fake Redis) on every supported Node line, a real Redis 7 job
+# and an install check of the npm pack tarball.
+# Kept deliberately small: only actions/checkout and actions/setup-node, no dependency cache, no
+# continue-on-error jobs (every job here must be green). The early-warning run against the newest SDK
+# releases lives in sdk-latest.yml so it can never turn a push red.
 name: ci
 on:
   push:
   pull_request:
-  schedule:
-    - cron: "17 3 * * 1"   # every Monday: catch breakage from new SDK / Node releases
   workflow_dispatch:
 
 permissions:
@@ -27,15 +26,13 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: npm
       - run: node --version && npm --version
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
       - run: npm test
       - run: npm run demo -- --backend all --lang en
       - name: Diagnostics on failure
         if: failure()
         run: |
-          node --version; npm --version
           npm ls --depth=0 || true
           ls -la build/test-out/test dist || true
 
@@ -54,24 +51,21 @@ jobs:
           --health-timeout 3s
           --health-retries 20
     env:
-      REDIS_URL: redis://localhost:6379
+      REDIS_URL: redis://127.0.0.1:6379   # IPv4 literal: no localhost -> ::1 lookup on the runner
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: npm
       - run: node --version && npm --version
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
       - run: npm run test:redis
       - run: npm run demo -- --backend redis --lang en
       - name: Diagnostics on failure
         if: failure()
         run: |
-          node --version; npm --version
           npm ls --depth=0 || true
           docker ps -a || true
-          docker logs "${{ job.services.redis.id }}" || true
 
   pack:
     name: install check (npm run check:pack)
@@ -82,29 +76,6 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: npm
       - run: node --version && npm --version
-      - run: npm ci
+      - run: npm ci --no-audit --no-fund
       - run: npm run check:pack
-      - name: Diagnostics on failure
-        if: failure()
-        run: |
-          node --version; npm --version
-          npm ls --depth=0 || true
-          npm pack --dry-run --ignore-scripts || true
-
-  sdk-latest:
-    name: newest SDK releases (early warning)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    continue-on-error: true   # rehydrate() relies on SDK internals; this job shows breakage before users hit it
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-          cache: npm
-      - run: npm ci
-      - run: npm install --no-save @modelcontextprotocol/sdk@latest @modelcontextprotocol/server@latest
-      - run: npm ls @modelcontextprotocol/sdk @modelcontextprotocol/server || true
-      - run: npm test

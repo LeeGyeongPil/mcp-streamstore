@@ -123,15 +123,35 @@ async function openRedis(io: CliIo, t: ReturnType<typeof translator>): Promise<R
   }
   // 닿지 않는 주소에서 영원히 재시도하지 않도록 연결 제한시간과 재시도 상한을 둔다
   const client = redis.createClient({ url, socket: { connectTimeout: CONNECT_TIMEOUT_MS, reconnectStrategy: boundedReconnect } });
-  client.on('error', () => undefined); // 연결 오류는 아래 connect() 가 알려 준다
+  // 재시도를 포기하면 connect() 는 우리가 만든 'gave up reconnecting' 만 던진다.
+  // 사용자에게는 진짜 원인(ECONNREFUSED·WRONGPASS 등)을 보여 주려고 마지막 'error' 이벤트를 기억해 둔다.
+  let lastError: Error | undefined;
+  client.on('error', (e: Error) => {
+    lastError = e;
+  });
   try {
     await client.connect();
   } catch (e) {
-    io.err(t('error.redisConnect', { message: (e as Error).message }));
+    io.err(t('error.redisConnect', { message: connectFailureMessage(lastError, e) }));
     client.destroy();
     return 2;
   }
   return { command: nodeRedisCommand(client), real: true, url: redactUrl(url), close: () => client.close() };
+}
+
+/**
+ * One-line cause for a failed Redis connect: prefer the last socket/auth error over our retry sentinel,
+ * and drop a trailing period so the message template can add its own sentence break.
+ */
+export function connectFailureMessage(lastError: unknown, thrown: unknown): string {
+  const pick = (x: unknown): string => {
+    if (!(x instanceof Error)) return x === undefined ? '' : String(x);
+    // AggregateError(IPv4·IPv6 둘 다 실패)는 message 가 비어 있을 수 있다 → 첫 하위 오류나 code 를 쓴다
+    if (x.message.trim() === '' && x instanceof AggregateError && x.errors[0] instanceof Error) return x.errors[0].message;
+    return x.message.trim() || String((x as { code?: unknown }).code ?? x.name);
+  };
+  const message = pick(lastError) || pick(thrown) || 'unknown error';
+  return message.replace(/[.\s]+$/, '');
 }
 
 function redactUrl(url: string): string {

@@ -1,6 +1,7 @@
 // AC-5: 실제 Redis(6.2+) 에서 RedisEventStore·RedisSessionStore 적합성, 두 인스턴스 재개, RedisServerEventBus 전달.
 // REDIS_URL 이 없으면 건너뜀을 분명히 표시하고 통과한다(로컬 샌드박스·기본 `npm test`).
-// CI 에서는 GitHub Actions 의 redis:7 서비스 컨테이너로 `REDIS_URL=redis://localhost:6379 npm run test:redis` 를 돈다.
+// CI 에서는 GitHub Actions 의 redis:7 서비스 컨테이너로 `REDIS_URL=redis://127.0.0.1:6379 npm run test:redis` 를 돈다
+// (localhost 대신 IPv4 리터럴 — 러너에서 localhost 가 ::1 로 먼저 풀려도 영향 없게).
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, describe, it } from 'node:test';
@@ -14,6 +15,7 @@ import {
   nodeRedisPubSub,
   type RedisCommand,
 } from '../src/index.js';
+import { connectFailureMessage } from '../src/cli.js';
 import { globEscape } from '../src/stores/redis.js';
 import { collectListen, listenRequest } from './helpers.js';
 
@@ -25,8 +27,17 @@ if (!url) {
 } else {
   const { createClient } = await import('redis');
   const client = createClient({ url, socket: { connectTimeout: 3000, reconnectStrategy: (n: number) => (n >= 2 ? new Error('gave up reconnecting') : 200 * (n + 1)) } });
-  client.on('error', () => undefined); // 연결 오류는 connect() 가 던진다
-  await client.connect();
+  // 연결 실패 시 재시도 포기 표시 대신 실제 원인(ECONNREFUSED 등)을 한 줄로 남긴다(CI 로그에서 바로 보이게)
+  let lastError: Error | undefined;
+  client.on('error', (e: Error) => {
+    lastError = e;
+  });
+  try {
+    await client.connect();
+  } catch (e) {
+    client.destroy();
+    throw new Error(`real Redis suite: could not connect to REDIS_URL (${new URL(url).host}): ${connectFailureMessage(lastError, e)}`);
+  }
   const command: RedisCommand = nodeRedisCommand(client);
   // 시험마다 고유 접두사 → 같은 Redis 를 다른 작업과 나눠 써도 섞이지 않고, 끝나면 이 접두사만 지운다
   const prefix = `mcp-streamstore-test:${randomUUID()}:`;

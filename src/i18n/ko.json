@@ -12,7 +12,7 @@
   "error.badLang": "알 수 없는 언어: {value} (en 또는 ko)",
   "error.noSdk": "이 데모에는 MCP SDK 가 필요합니다: npm install @modelcontextprotocol/sdk",
   "error.noRedisClient": "REDIS_URL 이 있지만 'redis' 패키지가 설치되지 않았습니다: npm install redis",
-  "error.redisConnect": "REDIS_URL 에 연결하지 못했습니다: {message} 서버가 실행 중인지, 주소·포트와 비밀번호가 맞는지 확인하세요.",
+  "error.redisConnect": "REDIS_URL 에 연결하지 못했습니다: {message}. 서버가 실행 중인지, 주소·포트와 비밀번호가 맞는지 확인하거나, REDIS_URL 을 지워 연습용 가짜(mock) Redis 를 쓰세요.",
   "error.failed": "데모 실패: {message}",
   "demo.title": "mcp-streamstore 데모: 인스턴스 A 에서 끊기고 인스턴스 B 로 다시 연결",
   "demo.sdk": "SDK: @modelcontextprotocol/sdk {version} (WebStandardStreamableHTTPServerTransport)",

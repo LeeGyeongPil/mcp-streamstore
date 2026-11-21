@@ -1,0 +1,26 @@
+# Early warning: run the offline tests against the newest SDK releases.
+# rehydrate() relies on SDK internals, so a new SDK release can break it before users notice.
+# Runs weekly and on demand only (never on push), so it cannot mark a commit as failed.
+name: sdk-latest
+on:
+  schedule:
+    - cron: "17 3 * * 1"   # every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sdk-latest:
+    name: newest SDK releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: npm ci --no-audit --no-fund
+      - run: npm install --no-save --no-audit --no-fund @modelcontextprotocol/sdk@latest @modelcontextprotocol/server@latest
+      - run: npm ls @modelcontextprotocol/sdk @modelcontextprotocol/server || true
+      - run: npm test

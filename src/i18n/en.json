@@ -12,7 +12,7 @@
   "error.badLang": "Unknown language: {value} (expected en or ko)",
   "error.noSdk": "This demo needs the MCP SDK: npm install @modelcontextprotocol/sdk",
   "error.noRedisClient": "REDIS_URL is set but the 'redis' package is not installed: npm install redis",
-  "error.redisConnect": "Could not connect to REDIS_URL: {message} Check that the server is running, the host and port are right, and the password is correct.",
+  "error.redisConnect": "Could not connect to REDIS_URL: {message}. Check that the server is running and that the host, port and password are right, or unset REDIS_URL to use the practice fake (mock) Redis.",
   "error.failed": "Demo failed: {message}",
   "demo.title": "mcp-streamstore demo: disconnect from instance A, reconnect to instance B",
   "demo.sdk": "SDK: @modelcontextprotocol/sdk {version} (WebStandardStreamableHTTPServerTransport)",
