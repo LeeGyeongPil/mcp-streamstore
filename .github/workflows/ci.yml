@@ -1,8 +1,8 @@
-# Offline tests (memory, SQLite, practice fake Redis) on every supported Node line, a real Redis 7 job
-# and an install check of the npm pack tarball.
-# Kept deliberately small: only actions/checkout and actions/setup-node, no dependency cache, no
-# continue-on-error jobs (every job here must be green). The early-warning run against the newest SDK
-# releases lives in sdk-latest.yml so it can never turn a push red.
+# One job on one runner: offline tests (memory, SQLite, practice fake Redis), then the demo, then the real Redis 7
+# suite against a service container.
+# Kept as small as possible on purpose: Node 22 (the oldest supported line, engines >= 22.13),
+# only actions/checkout and actions/setup-node, no dependency cache, no matrix, no scheduled runs.
+# Node 24/26 and the npm pack install check (npm run check:pack) are run locally before a release.
 name: ci
 on:
   push:
@@ -14,30 +14,7 @@ permissions:
 
 jobs:
   test:
-    name: npm test (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ["22", "24", "26"]   # engines: node >= 22.13 (node:sqlite without a flag)
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node }}
-      - run: node --version && npm --version
-      - run: npm ci --no-audit --no-fund
-      - run: npm test
-      - run: npm run demo -- --backend all --lang en
-      - name: Diagnostics on failure
-        if: failure()
-        run: |
-          npm ls --depth=0 || true
-          ls -la build/test-out/test dist || true
-
-  redis:
-    name: real Redis 7 (npm run test:redis)
+    name: npm test + real Redis 7 (Node 22)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -50,32 +27,17 @@ jobs:
           --health-interval 2s
           --health-timeout 3s
           --health-retries 20
-    env:
-      REDIS_URL: redis://127.0.0.1:6379   # IPv4 literal: no localhost -> ::1 lookup on the runner
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: "24"
+          node-version: "22"
       - run: node --version && npm --version
       - run: npm ci --no-audit --no-fund
+      # Offline suite: REDIS_URL is not set here, so the real Redis file reports one skipped test.
+      - run: npm test
+      - run: npm run demo -- --backend all --lang en
+      # Real Redis suite: the IPv4 literal avoids a localhost -> ::1 lookup on the runner.
       - run: npm run test:redis
-      - run: npm run demo -- --backend redis --lang en
-      - name: Diagnostics on failure
-        if: failure()
-        run: |
-          npm ls --depth=0 || true
-          docker ps -a || true
-
-  pack:
-    name: install check (npm run check:pack)
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: "24"
-      - run: node --version && npm --version
-      - run: npm ci --no-audit --no-fund
-      - run: npm run check:pack
+        env:
+          REDIS_URL: redis://127.0.0.1:6379
