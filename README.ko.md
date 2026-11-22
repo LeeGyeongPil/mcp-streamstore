@@ -216,14 +216,15 @@ runEventStoreConformance('my-store', ({ shared, retention }) => new MyStore({ ta
 
 ## 버전·호환성
 
-[유의적 버전(SemVer)](https://semver.org/lang/ko/)을 따릅니다. 0.x 동안은 마이너 버전에서 API 가 바뀔 수 있고 [CHANGELOG.md](CHANGELOG.md)에 적습니다. CI 는 Node 22(ubuntu-latest)에서 SDK `@modelcontextprotocol/sdk` 1.32.2 와 `@modelcontextprotocol/server` 2.4.0, 실제 Redis 7 작업으로 시험합니다.
+[유의적 버전(SemVer)](https://semver.org/lang/ko/)을 따릅니다. 0.x 동안은 마이너 버전에서 API 가 바뀔 수 있고 [CHANGELOG.md](CHANGELOG.md)에 적습니다. 필수 CI 작업은 외부 서비스 없이(ubuntu-24.04, Node 22.23.5, 서비스 컨테이너 없음) `npm run ci`(시험 + 데모)만 돌립니다. 로컬에서도 같은 명령으로 확인할 수 있고, SDK `@modelcontextprotocol/sdk` 1.32.2 와 `@modelcontextprotocol/server` 2.4.0 으로 시험합니다. 실제 Redis 시험은 필요할 때 수동 `redis-real` 워크플로로만 돌립니다.
 
 ## 개발·기여
 
 ```bash
 npm install
-npm test                  # 빌드 + 93개 시험(메모리, SQLite, 연습용 가짜 Redis, 실제 Redis 시험은 건너뜀)
-REDIS_URL=redis://localhost:6379 npm run test:redis   # 실제 Redis 시험
+npm test                  # 빌드 + 시험(메모리, SQLite, 연습용 가짜 Redis; REDIS_URL 이 없으면 실제 Redis 시험은 건너뜀)
+npm run ci                # CI 가 돌리는 명령: npm test + 오프라인 데모
+REDIS_URL=redis://localhost:6379 npm run test:redis   # 실제 Redis 시험(수동, 서버 필요)
 npm run check:pack        # pack, 새 프로젝트에 설치, quickstart 실행, 타입 검사
 ```
 

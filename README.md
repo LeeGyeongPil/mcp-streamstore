@@ -216,14 +216,15 @@ Checked 2026-11-20. This list names the options and links to them; read their pa
 
 ## Versioning and compatibility
 
-[SemVer](https://semver.org). While 0.x, minor versions may change the API; changes are listed in [CHANGELOG.md](CHANGELOG.md). CI runs on Node 22 (ubuntu-latest), SDK `@modelcontextprotocol/sdk` 1.32.2 and `@modelcontextprotocol/server` 2.4.0, real Redis 7 in a CI job.
+[SemVer](https://semver.org). While 0.x, minor versions may change the API; changes are listed in [CHANGELOG.md](CHANGELOG.md). The required CI job is offline only (ubuntu-24.04, Node 22.23.5, no service containers) and runs `npm run ci` (tests plus the demo), the same command you can run locally, with SDK `@modelcontextprotocol/sdk` 1.32.2 and `@modelcontextprotocol/server` 2.4.0. The real Redis suite runs only on demand, as the manual `redis-real` workflow.
 
 ## Development and contributing
 
 ```bash
 npm install
-npm test                  # build + 93 tests (memory, SQLite, practice fake Redis; real-Redis suite skipped)
-REDIS_URL=redis://localhost:6379 npm run test:redis   # real Redis suite
+npm test                  # build + tests (memory, SQLite, practice fake Redis; the real-Redis suite is skipped without REDIS_URL)
+npm run ci                # what CI runs: npm test + the offline demo
+REDIS_URL=redis://localhost:6379 npm run test:redis   # real Redis suite (manual, needs a server)
 npm run check:pack        # pack, install into a fresh project, run quickstart, type-check
 ```
 
