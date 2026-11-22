@@ -1,6 +1,6 @@
 {
   "name": "mcp-streamstore",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Durable EventStore (SQLite, Redis) and session store for MCP SDK Streamable HTTP servers: Last-Event-ID resumption across restarts and instances, session scoping, stateful-session rehydration and a v2 Redis ServerEventBus.",
   "license": "MIT",
   "type": "module",
@@ -59,6 +59,7 @@
     "test:redis": "npm run build && npm run build:test && node --test --test-reporter=tap build/test-out/test/redis.real.test.js",
     "demo": "npm run build --silent && node dist/cli.js demo",
     "check:pack": "npm run build && node scripts/check-pack.mjs",
+    "ci": "npm test && node dist/cli.js demo --backend all --lang en",
     "prepack": "npm run build"
   },
   "peerDependencies": {

@@ -1,11 +1,14 @@
-# One job on one runner: offline tests (memory, SQLite, practice fake Redis), then the demo, then the real Redis 7
-# suite against a service container.
-# Kept as small as possible on purpose: Node 22 (the oldest supported line, engines >= 22.13),
-# only actions/checkout and actions/setup-node, no dependency cache, no matrix, no scheduled runs.
-# Node 24/26 and the npm pack install check (npm run check:pack) are run locally before a release.
+# Required CI: offline only. No service containers, no secrets, no network beyond `npm ci` (registry.npmjs.org).
+# `npm run ci` is the same single command contributors run locally: `npm test` (build + offline tests on memory,
+# SQLite and the practice fake Redis; the real-Redis file reports skipped) and then the demo.
+# Runner, Node and both official actions are pinned (actions by full commit SHA, tag in the trailing comment).
+# The real Redis suite is optional: run `npm run test:redis` locally against your own Redis or trigger the
+# manual `redis-real` workflow. Node 24/26 and `npm run check:pack` are checked locally before a release.
+# test/workflow.test.ts checks these rules as part of `npm test`.
 name: ci
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -14,30 +17,14 @@ permissions:
 
 jobs:
   test:
-    name: npm test + real Redis 7 (Node 22)
-    runs-on: ubuntu-latest
+    name: npm run ci (Node 22.23.5, offline)
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
-    services:
-      redis:
-        image: redis:7
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 2s
-          --health-timeout 3s
-          --health-retries 20
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: "22"
+          node-version: "22.23.5"
       - run: node --version && npm --version
       - run: npm ci --no-audit --no-fund
-      # Offline suite: REDIS_URL is not set here, so the real Redis file reports one skipped test.
-      - run: npm test
-      - run: npm run demo -- --backend all --lang en
-      # Real Redis suite: the IPv4 literal avoids a localhost -> ::1 lookup on the runner.
-      - run: npm run test:redis
-        env:
-          REDIS_URL: redis://127.0.0.1:6379
+      - run: npm run ci

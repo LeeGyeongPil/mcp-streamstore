@@ -1,0 +1,36 @@
+# Optional real Redis suite. Manual only (Actions tab -> redis-real -> Run workflow); it never runs on push or PR
+# and is not a release gate. Same runner, Node and pinned actions as ci.yml, plus a redis:7 service container.
+# Locally the same check is: REDIS_URL=redis://127.0.0.1:6379 npm run test:redis
+name: redis-real
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  redis:
+    name: npm run test:redis (real Redis 7, Node 22.23.5)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22.23.5"
+      - run: node --version && npm --version
+      - run: npm ci --no-audit --no-fund
+      # The IPv4 literal avoids a localhost -> ::1 lookup on the runner.
+      - run: npm run test:redis
+        env:
+          REDIS_URL: redis://127.0.0.1:6379
