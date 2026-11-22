@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- CI: the required job is offline only (ubuntu-24.04, Node 22.23.5, actions pinned by commit SHA, no service containers) and runs `npm run ci` (tests + demo), the same command you can run locally.
+- The real Redis suite moved to a manual workflow (`redis-real`); locally it is still `npm run test:redis` with `REDIS_URL`.
+- New tests: a CI contract check for the workflow files and a resume case over a delayed practice fake Redis.
+- No library changes.
+
 ## 0.1.3
 
 - CI reduced to a single job (ubuntu-latest, Node 22, redis:7 service); the separate `sdk-latest.yml` workflow was removed.
